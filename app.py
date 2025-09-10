@@ -204,7 +204,7 @@ async def get_recommend_reason_wordcloud():
         
         # 定义常见的停用词
         stop_words = {
-            '的', '了', '在', '是', '我', '有', '和', '就', '不', '人', '都', '一', '一个', 
+            '的', '了', '在', '是', '我', '有', '和', '就', '不', '人', '都', '一个', 
             '上', '也', '很', '到', '说', '要', '去', '你', '会', '着', '没有', '看', '好',
             '这', '那', '来', '个', '为', '与', '及', '等', '更', '最', '非常', '特别',
             '真的', '特别', '超级', '绝对', '完全', '太', '很多', '许多', '大量'
@@ -212,8 +212,7 @@ async def get_recommend_reason_wordcloud():
         
         for text in all_text:
             # 简单的词汇分割处理
-            # 对于中文，我们主要基于标点符号和特殊字符进行分割
-            words = re.findall(r'[\u4e00-\u9fff]+|[a-zA-Z]+|\d+', text)
+            words = re.findall(r'[a-zA-Z]+', text)
             
             for word in words:
                 word = word.strip()
