@@ -35,6 +35,16 @@ const AppLayout = ({ children }) => {
       label: '词云分析',
     },
     {
+      key: '/line-chart',
+      icon: <div>📈</div>,
+      label: '时间趋势',
+    },
+    {
+      key: '/bar-chart',
+      icon: <div>📊</div>,
+      label: '主题统计',
+    },
+    {
       key: '/dashboard',
       icon: <DashboardOutlined />,
       label: '综合仪表板',

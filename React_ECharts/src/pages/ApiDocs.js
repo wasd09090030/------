@@ -59,6 +59,23 @@ const ApiDocs = () => {
     },
     {
       method: 'GET',
+      path: '/api/video-publish-times',
+      title: '获取投稿时间分布数据',
+      description: '返回7000条视频投稿时间的分布统计数据，包括24小时、每日、星期分布',
+      response: {
+        success: true,
+        data: {
+          hourly: { categories: ["00:00", "01:00", "02:00"], series: [45, 32, 28] },
+          daily: { categories: ["2023-11-01", "2023-11-02"], series: [156, 198] },
+          weekday: { categories: ["周一", "周二", "周三"], series: [1200, 980, 1150] }
+        },
+        total_videos: 7000,
+        peak_hour: 14,
+        peak_weekday: "周一"
+      }
+    },
+    {
+      method: 'GET',
       path: '/api/health',
       title: '健康检查',
       description: '检查API服务器状态',

@@ -2,6 +2,8 @@ import React from 'react';
 import { Row, Col, Card } from 'antd';
 import PieChart from '../components/PieChart';
 import WordCloud from '../components/WordCloud';
+import LineChart from '../components/LineChart';
+import BarChart from '../components/BarChart';
 
 const Dashboard = () => {
   return (
@@ -18,7 +20,7 @@ const Dashboard = () => {
           📊 综合数据仪表板
         </h1>
         <p style={{ fontSize: '16px', color: '#666' }}>
-          多维度数据可视化分析 - 地理分布 & 文本挖掘
+          多维度数据可视化分析 - 地理分布 & 文本挖掘 & 时间趋势 & 主题统计
         </p>
       </div>
 
@@ -36,6 +38,38 @@ const Dashboard = () => {
             }}
           >
             <PieChart />
+          </Card>
+        </Col>
+
+        {/* 时间趋势部分 */}
+        <Col span={24}>
+          <Card 
+            title="📈 投稿时间趋势分析" 
+            style={{ marginBottom: '24px' }}
+            headStyle={{ 
+              background: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+              color: 'white',
+              fontSize: '16px',
+              fontWeight: 'bold'
+            }}
+          >
+            <LineChart />
+          </Card>
+        </Col>
+
+        {/* 主题统计部分 */}
+        <Col span={24}>
+          <Card 
+            title="📊 主题分布统计分析" 
+            style={{ marginBottom: '24px' }}
+            headStyle={{ 
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: 'white',
+              fontSize: '16px',
+              fontWeight: 'bold'
+            }}
+          >
+            <BarChart />
           </Card>
         </Col>
 

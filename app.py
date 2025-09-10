@@ -1,14 +1,12 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import HTMLResponse, FileResponse
 import sqlite3
 import json
 from pathlib import Path
 import re
 from collections import Counter
 
-app = FastAPI(title="数据可视化API", description="使用FastAPI和ECharts展示数据")
+app = FastAPI(title="数据可视化API", description="基于React+ECharts+SQLite的数据可视化后端API服务")
 
 # 允许跨域请求
 app.add_middleware(
@@ -18,9 +16,6 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
-
-# 挂载静态文件
-app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # 数据库路径
 DB_PATH = "Sqlite/data.db"
@@ -33,94 +28,19 @@ def get_db_connection():
 
 @app.get("/")
 async def root():
-    """根路径，返回主页"""
-    return HTMLResponse("""
-    <!DOCTYPE html>
-    <html lang="zh-CN">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>数据可视化平台</title>
-        <style>
-            body {
-                font-family: 'Arial', '微软雅黑', sans-serif;
-                margin: 0;
-                padding: 0;
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                min-height: 100vh;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            }
-            .container {
-                text-align: center;
-                background: white;
-                padding: 50px;
-                border-radius: 20px;
-                box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-                max-width: 600px;
-            }
-            .title {
-                font-size: 36px;
-                color: #333;
-                margin-bottom: 20px;
-                text-shadow: 2px 2px 4px rgba(0,0,0,0.1);
-            }
-            .subtitle {
-                font-size: 18px;
-                color: #666;
-                margin-bottom: 40px;
-            }
-            .nav-buttons {
-                display: flex;
-                flex-direction: column;
-                gap: 20px;
-                align-items: center;
-            }
-            .nav-btn {
-                display: block;
-                padding: 15px 30px;
-                background: linear-gradient(45deg, #667eea, #764ba2);
-                color: white;
-                text-decoration: none;
-                border-radius: 25px;
-                font-size: 18px;
-                font-weight: bold;
-                transition: all 0.3s ease;
-                box-shadow: 0 4px 15px rgba(0,0,0,0.2);
-                min-width: 250px;
-            }
-            .nav-btn:hover {
-                transform: translateY(-3px);
-                box-shadow: 0 6px 20px rgba(0,0,0,0.3);
-            }
-            .wordcloud-btn {
-                background: linear-gradient(45deg, #f093fb, #f5576c);
-            }
-        </style>
-    </head>
-    <body>
-        <div class="container">
-            <div class="title">📊 数据可视化平台</div>
-            <div class="subtitle">基于SQLite数据库的ECharts可视化展示</div>
-            <div class="nav-buttons">
-                <a href="/static/pie_chart.html" class="nav-btn">
-                    🥧 投稿地区分布饼图
-                </a>
-                <a href="/wordcloud" class="nav-btn wordcloud-btn">
-                    ☁️ 推荐理由词云分析
-                </a>
-                <a href="/api/publish-location-data" class="nav-btn" style="background: linear-gradient(45deg, #4facfe, #00f2fe);">
-                    🔗 地区数据API
-                </a>
-                <a href="/api/recommend-reason-wordcloud" class="nav-btn" style="background: linear-gradient(45deg, #43e97b, #38f9d7);">
-                    🔗 词云数据API
-                </a>
-            </div>
-        </div>
-    </body>
-    </html>
-    """)
+    """根路径，返回API信息"""
+    return {
+        "message": "数据可视化API服务",
+        "description": "基于React+ECharts+SQLite的数据可视化后端API服务",
+        "frontend": "http://localhost:3000",
+        "endpoints": [
+            {"path": "/api/publish-location-data", "method": "GET", "description": "获取投稿地区分布数据"},
+            {"path": "/api/recommend-reason-wordcloud", "method": "GET", "description": "获取推荐理由词云数据"},
+            {"path": "/api/video-publish-times", "method": "GET", "description": "获取投稿时间分布数据"},
+            {"path": "/api/theme-name-data", "method": "GET", "description": "获取主题分布统计数据"},
+            {"path": "/api/health", "method": "GET", "description": "健康检查"}
+        ]
+    }
 
 @app.get("/api/publish-location-data")
 async def get_publish_location_data():
@@ -176,11 +96,6 @@ async def get_publish_location_data():
             "data": []
         }
 
-@app.get("/wordcloud")
-async def wordcloud_page():
-    """词云页面"""
-    return FileResponse("static/wordcloud.html")
-
 @app.get("/api/recommend-reason-wordcloud")
 async def get_recommend_reason_wordcloud():
     """获取推荐理由词云数据"""
@@ -212,7 +127,7 @@ async def get_recommend_reason_wordcloud():
         
         for text in all_text:
             # 简单的词汇分割处理
-            words = re.findall(r'[a-zA-Z]+', text)
+            words = re.findall(r'[\u4e00-\u9fffa-zA-Z]+|\d+', text)
             
             for word in words:
                 word = word.strip()
@@ -251,6 +166,173 @@ async def get_recommend_reason_wordcloud():
             "success": False,
             "error": str(e),
             "data": []
+        }
+
+@app.get("/api/theme-name-data")
+async def get_theme_name_data():
+    """获取主题名称统计数据"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 查询所有主题名称数据
+        cursor.execute("SELECT themeName, count FROM theme_name_count WHERE themeName IS NOT NULL AND count IS NOT NULL")
+        rows = cursor.fetchall()
+        
+        # 转换为前端需要的格式
+        data = []
+        for row in rows:
+            theme_name = str(row[0]).strip() if row[0] else "未知主题"
+            count_str = str(row[1]).strip() if row[1] else "0"
+            
+            try:
+                count = int(count_str)
+            except ValueError:
+                count = 0
+            
+            if theme_name and theme_name != "未知主题":
+                data.append({"name": theme_name, "value": count})
+        
+        # 按数量降序排列
+        data.sort(key=lambda x: x["value"], reverse=True)
+        
+        conn.close()
+        
+        print(f"处理了 {len(data)} 条主题数据")
+        if data:
+            print(f"前5条数据: {data[:5]}")
+            print(f"数量最多的主题: {data[0]['name']} ({data[0]['value']})")
+        
+        return {
+            "success": True,
+            "data": data,
+            "total_themes": len(data),
+            "total_count": sum(item["value"] for item in data),
+            "top_theme": data[0]["name"] if data else "",
+            "theme_range": {
+                "max": data[0]["value"] if data else 0,
+                "min": data[-1]["value"] if data else 0
+            }
+        }
+        
+    except Exception as e:
+        print(f"主题名称API错误: {e}")
+        import traceback
+        traceback.print_exc()
+        return {
+            "success": False,
+            "error": str(e),
+            "data": []
+        }
+
+@app.get("/api/video-publish-times")
+async def get_video_publish_times():
+    """获取视频投稿时间分布数据"""
+    try:
+        conn = get_db_connection()
+        cursor = conn.cursor()
+        
+        # 查询所有投稿时间数据
+        cursor.execute("SELECT publish_time FROM video_publish_times WHERE publish_time IS NOT NULL")
+        rows = cursor.fetchall()
+        
+        # 处理时间数据，按小时统计分布
+        from datetime import datetime
+        from collections import defaultdict
+        
+        hour_count = defaultdict(int)  # 按小时统计
+        date_count = defaultdict(int)  # 按日期统计
+        weekday_count = defaultdict(int)  # 按星期统计
+        
+        for row in rows:
+            try:
+                # 解析ISO时间格式
+                time_str = row[0].replace('.000Z', '')
+                dt = datetime.fromisoformat(time_str.replace('Z', '+00:00'))
+                
+                # 按小时统计 (0-23)
+                hour = dt.hour
+                hour_count[hour] += 1
+                
+                # 按日期统计
+                date = dt.strftime('%Y-%m-%d')
+                date_count[date] += 1
+                
+                # 按星期几统计 (0=Monday, 6=Sunday)
+                weekday = dt.weekday()
+                weekday_names = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+                weekday_count[weekday_names[weekday]] += 1
+                
+            except Exception as e:
+                print(f"解析时间出错: {row[0]} - {e}")
+                continue
+        
+        # 转换为前端图表格式
+        
+        # 1. 按小时分布（折线图）
+        hourly_data = []
+        hours_x = []
+        hours_y = []
+        for hour in range(24):
+            hours_x.append(f"{hour:02d}:00")
+            hours_y.append(hour_count[hour])
+            hourly_data.append({"hour": f"{hour:02d}:00", "count": hour_count[hour]})
+        
+        # 2. 按日期分布（折线图，只取最近30天或数据最密集的时间段）
+        sorted_dates = sorted(date_count.items())
+        daily_x = []
+        daily_y = []
+        # 取最后30个有数据的日期
+        recent_dates = sorted_dates[-30:] if len(sorted_dates) > 30 else sorted_dates
+        for date, count in recent_dates:
+            daily_x.append(date)
+            daily_y.append(count)
+        
+        # 3. 按星期分布（柱状图数据也可用折线图显示）
+        weekday_x = ['周一', '周二', '周三', '周四', '周五', '周六', '周日']
+        weekday_y = [weekday_count[day] for day in weekday_x]
+        
+        conn.close()
+        
+        print(f"处理了 {len(rows)} 条时间数据")
+        print(f"小时分布: {dict(sorted(hour_count.items())[:5])}...")
+        print(f"日期范围: {min(date_count.keys())} 到 {max(date_count.keys())}")
+        
+        return {
+            "success": True,
+            "data": {
+                "hourly": {
+                    "categories": hours_x,
+                    "series": hours_y,
+                    "raw_data": hourly_data
+                },
+                "daily": {
+                    "categories": daily_x,
+                    "series": daily_y,
+                    "date_range": f"{min(date_count.keys())} 到 {max(date_count.keys())}"
+                },
+                "weekday": {
+                    "categories": weekday_x,
+                    "series": weekday_y
+                }
+            },
+            "total_videos": len(rows),
+            "date_range": {
+                "start": min(date_count.keys()),
+                "end": max(date_count.keys())
+            },
+            "peak_hour": max(hour_count.items(), key=lambda x: x[1])[0] if hour_count else 0,
+            "peak_weekday": max(weekday_count.items(), key=lambda x: x[1])[0] if weekday_count else "周一"
+        }
+        
+    except Exception as e:
+        print(f"视频时间分布API错误: {e}")
+        import traceback
+        traceback.print_exc()
+        return {
+            "success": False,
+            "error": str(e),
+            "data": {"hourly": {"categories": [], "series": []}, "daily": {"categories": [], "series": []}, "weekday": {"categories": [], "series": []}}
         }
 
 @app.get("/api/health")

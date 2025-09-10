@@ -22,6 +22,20 @@ const Home = () => {
       color: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)'
     },
     {
+      icon: <div style={{ fontSize: '48px' }}>📈</div>,
+      title: '投稿时间趋势分析',
+      description: '基于7000条时间数据的投稿规律和趋势分析',
+      path: '/line-chart',
+      color: 'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)'
+    },
+    {
+      icon: <div style={{ fontSize: '48px' }}>📊</div>,
+      title: '主题分布统计图',
+      description: '基于99种主题的横向柱状图分布分析',
+      path: '/bar-chart',
+      color: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+    },
+    {
       icon: <DashboardOutlined style={{ fontSize: '48px', color: '#faad14' }} />,
       title: '综合仪表板',
       description: '多图表组合展示，全面的数据分析视图',
@@ -67,7 +81,7 @@ const Home = () => {
       {/* 功能卡片 */}
       <Row gutter={[32, 32]} justify="center">
         {features.map((feature, index) => (
-          <Col key={index} xs={24} sm={12} lg={6}>
+          <Col key={index} xs={24} sm={12} md={8} lg={6} xl={4}>
             <Card
               hoverable
               style={{

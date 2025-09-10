@@ -44,6 +44,16 @@ export const dataAPI = {
     return api.get('/api/recommend-reason-wordcloud');
   },
 
+  // 获取投稿时间分布数据
+  getVideoPublishTimes: () => {
+    return api.get('/api/video-publish-times');
+  },
+
+  // 获取主题名称统计数据
+  getThemeNameData: () => {
+    return api.get('/api/theme-name-data');
+  },
+
   // 健康检查
   healthCheck: () => {
     return api.get('/api/health');

@@ -6,6 +6,8 @@ import AppLayout from './components/Layout';
 import Home from './pages/Home';
 import Dashboard from './pages/Dashboard';
 import ApiDocs from './pages/ApiDocs';
+import LineChartPage from './pages/LineChartPage';
+import BarChartPage from './pages/BarChartPage';
 import PieChart from './components/PieChart';
 import WordCloud from './components/WordCloud';
 import './App.css';
@@ -41,6 +43,8 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/pie-chart" element={<PieChart />} />
             <Route path="/word-cloud" element={<WordCloud />} />
+            <Route path="/line-chart" element={<LineChartPage />} />
+            <Route path="/bar-chart" element={<BarChartPage />} />
             <Route path="/dashboard" element={<Dashboard />} />
             <Route path="/api-docs" element={<ApiDocs />} />
           </Routes>
